@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>calendar</title>
+    <style type="text/css">
+		.rest {
+			color: #FF0000;
+		}
+		.sat {
+			color: #0000FF;
+		}
+		.rest {
+			background-color: #cccccc!important;
+		}
+	
+    </style>
+    <script type="text/javascript" src="js/angular.min.js"></script>
+</head>
+<body>
+	<div ng-app="myApp" ng-controller="myController">
+		<label>日常休息日：</label>
+	    <input type="text" ng-change="restDayChange()" ng-value="restDay">
+	    <br>
+	    <br>
+		<div id="calendar">
+	    	
+	    </div>
+	</div>
+	
+	<script src="calendar.js"></script>
+</body>
+</html>
