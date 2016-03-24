@@ -1,9 +1,7 @@
 var app = angular.module('myApp', []);
-app.controller('myController', function ($scope) {
+app.controller('myCtrl', ['$scope', function ($scope) {
 
-    $scope.restDayChange = function () {
-        $scope.restDay;
-    };
+    $scope.weekDayList = ["礼拜一", "礼拜二", "礼拜三", "礼拜四", "礼拜五", "礼拜六", "礼拜天"];
 
     //判断是否为闰年(leap year)
     function isLeapYear (year) {
@@ -211,9 +209,11 @@ app.controller('myController', function ($scope) {
                     td.onmouseover = function () {
                         this.style.backgroundColor = t.colors.bg_over;
                     } 
-                    td.onmouseout = function () {
-                        this.style.backgroundColor = bg_color;
-                    }
+                    td.onmouseout = (function (color) {
+                        return function () {
+                            this.style.backgroundColor = color;
+                        }
+                    })(bg_color);
                     
                 } else {
                     document.getElementById('calendar_'+ (i + 1) +'_'+ j +'').innerHTML = "&nbsp";
@@ -243,6 +243,6 @@ app.controller('myController', function ($scope) {
     }
 
     var calendar = new Calendar();
-})
+}]);
 
     

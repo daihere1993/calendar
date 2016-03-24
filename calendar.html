@@ -15,12 +15,12 @@
 		}
 	
     </style>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.2/angular.min.js"></script>
+    <script type="text/javascript" src="angular.min.js"></script>
 </head>
 <body>
-	<div ng-app="myApp" ng-controller="myController">
+	<div ng-app="myApp" ng-controller="myCtrl">
 		<label>日常休息日：</label>
-	    <input type="text" ng-change="restDayChange()" ng-value="restDay">
+	    <select ng-model="selectedDate" ng-options="x for x in weedDayList"></select>
 	    <br>
 	    <br>
 		<div id="calendar">
