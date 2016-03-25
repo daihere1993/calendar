@@ -78,6 +78,8 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
 
         //常规休息日
         this.normal_restDay = [0, 6];
+        //法定节假日
+        this.
         //常规日工时
         this.normal_day_workHours = 8;
         //每个礼拜的休息天数
@@ -137,16 +139,16 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
         document.getElementById('year_select').onchange = function () {
             SUBPUB.trigger();
             t.year = parseInt(this.value);
-            t.setDay(t.year, t.month);
+            t.setDate(t.year, t.month);
         };
 
         document.getElementById('month_select').onchange = function () {
             SUBPUB.trigger();
             t.month = parseInt(this.value);
-            t.setDay(t.year, t.month);
+            t.setDate(t.year, t.month);
         };
 
-        this.setDay();
+        this.setDate();
     };
 
     //计算给定时间段内的工作日 startDate = year-month-day
@@ -220,7 +222,7 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
         this.init();
     };
 
-    Calendar.prototype.setDay = function (year, month) {
+    Calendar.prototype.setDate = function (year, month) {
         if ( !year ) {
             year = this.year;
         }
