@@ -13,14 +13,21 @@
 		.rest {
 			background-color: #cccccc!important;
 		}
-	
+		.restDateSelect {
+			margin-left: 4px;
+		}	
     </style>
+    <script type="text/javascript" src="jquery-2.1.4.js"></script>
     <script type="text/javascript" src="angular.min.js"></script>
 </head>
 <body>
 	<div ng-app="myApp" ng-controller="myCtrl">
 		<label>日常休息日：</label>
-	    <select ng-model="selectedDate" ng-options="x for x in weedDayList"></select>
+		<select id="rest_type" ng-model="restType" ng-change="selectedRestType()">
+			<option>单休</option>
+			<option>双休</option>
+		</select>
+	    
 	    <br>
 	    <br>
 		<div id="calendar">
