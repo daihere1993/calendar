@@ -77,11 +77,17 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
         this.month = this.date.getMonth() + 1;
 
         //常规休息日
-        this.normal_restDay = [0, 6];
+        this.normal_restDays = [0, 6];
+        //常规工作日
+        this.normal_workDays = [];
+        //强制休息日（即用户将工作日强制设置为休息日）
+        this.special_restDays = [];
+        //强制工作日（即用户将休息日强制设置为工作日）
+        this.special_workDays = [];
         //法定节假日
-        this.
+        this.statuoryHolidays = [];
         //常规日工时
-        this.normal_day_workHours = 8;
+        this.normal_perDay_workHours = 8;
         //每个礼拜的休息天数
         this.number_perWeek_restDay = 2;
 
@@ -92,7 +98,7 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
             bg_restDay: "#CCCCCC"
         };
 
-        this.init();
+        // this.init();
     }
 
     Calendar.prototype.init = function () {
@@ -137,25 +143,56 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
         document.getElementById('calendar').innerHTML = template_html;
 
         document.getElementById('year_select').onchange = function () {
-            SUBPUB.trigger();
             t.year = parseInt(this.value);
             t.setDate(t.year, t.month);
         };
 
         document.getElementById('month_select').onchange = function () {
-            SUBPUB.trigger();
             t.month = parseInt(this.value);
             t.setDate(t.year, t.month);
         };
 
         this.setDate();
+
+        this.calculateWorkDaysByTwoDate("2016-2-1", "2016-2-22");
     };
 
     //计算给定时间段内的工作日 startDate = year-month-day
     Calendar.prototype.calculateWorkDaysByTwoDate = function (startDate, endDate) {
-        /*计算时间段内的休息日(常规休息日 + 法定节假日 + 临时设定休息日)*/
-        var normalDays = this.calculateDaysByTwoDate(startDate, endDate);
+        /*(常规工作日 + 强制工作日 - 强制休息日)*/
+        //时间段内共有几天
+        var t = this;
+        var allDays = this.calculateDaysByTwoDate(startDate, endDate);
+        var normalWorkDays = Math.floor(allDays/7) * (7 - this.normal_restDays.length) + branchCalculate(Math.floor(allDays%7));
+        alert(normalWorkDays);
 
+        //当days小于7的时候判断当中有几天是常规工作日
+        function branchCalculate (days) {
+            var sum = 0;;
+            var array = endDate.split(endDate);
+            var year = parseInt(array[0]);
+            var month = parseInt(array[1]);
+            var day = parseInt(array[2]);
+
+            for ( var i = 0; i < days; i++ ) {
+                var isRestDay = false;
+                for ( var j = 0; j < t.normal_restDays.length; j++ ) {
+                    if ( getWeekDay(year, month, day) === t.normal_restDays[j] ) {
+                        isRestDay = true;
+                        break;
+                    }    
+                }
+                if ( !isRestDay ) {
+                    sum ++;
+                }
+                if ( getDayTotalNumberOfMonth(year, month) === day ) {
+                    day = 1;
+                } else {
+                    day++;    
+                }
+            }
+            return sum;
+        }
     };
 
     //计算给定时间段内共有几天（包括startDate和endDate）格式：startDate = year-month-day
@@ -204,11 +241,11 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
     };
 
     Calendar.prototype.setRestDay = function (restType) {
-        this.normal_restDay = [];
+        this.normal_restDays = [];
         if ( $scope.restType === "单休" ) {
             var tmpArr = $scope.selectedDate0.split(""); 
             var ch_Num = tmpArr[tmpArr.length - 1];
-            this.normal_restDay.push(toChNumber(ch_Num, "toNumber"));
+            this.normal_restDays.push(toChNumber(ch_Num, "toNumber"));
         } else if ( $scope.restType === "双休" ) {
             var tmpArr0 = $scope.selectedDate0.split(""); 
             var ch_Num0 = tmpArr0[tmpArr0.length - 1];
@@ -216,11 +253,13 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
             var tmpArr1 = $scope.selectedDate1.split(""); 
             var ch_Num1 = tmpArr1[tmpArr1.length - 1];
 
-            this.normal_restDay.push(toChNumber(ch_Num0, "toNumber"));
-            this.normal_restDay.push(toChNumber(ch_Num1, "toNumber"));
+            this.normal_restDays.push(toChNumber(ch_Num0, "toNumber"));
+            this.normal_restDays.push(toChNumber(ch_Num1, "toNumber"));
         }
         this.init();
     };
+
+    var isFirst = true;
 
     Calendar.prototype.setDate = function (year, month) {
         if ( !year ) {
@@ -250,21 +289,17 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
             isNow = true;
         }
 
+        
         for ( var i = 0; i < 6; i++ ) {
             for ( var j = 1; j <= 7; j++ ) {
                 var calendar_date = 7*i + j - head_spacing_num;
+                var td = document.getElementById('calendar_'+ (i + 1) +'_'+ j +'');
                 if ( i === 0 && j > head_spacing_num || calendar_date <= day_totalNum && i != 0 ) {
                     var bg_color = t.colors.bg_out;
                     var week_day = getWeekDay(year, month, calendar_date);
-                    var td = document.getElementById('calendar_'+ (i + 1) +'_'+ j +'');
                     //判断是否为当天
                     if ( isNow && date.getDate() === calendar_date ) {
                         td.style.backgroundColor = t.colors.bg_today;
-                        SUBPUB.listen((function (dom) {
-                            return function () {
-                                dom.style.backgroundColor = t.colors.bg_out;    
-                            }
-                        })(td));
                         bg_color = t.colors.bg_today;
                     } else if ( week_day === 6 || week_day === 7 ){
                     //判断是否为礼拜六礼拜天
@@ -272,28 +307,50 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
                     }
 
                     //判断是否为双休日
-                    for ( var k = 0; k < this.normal_restDay.length; k++ ) {
-                        if ( week_day === this.normal_restDay[k] ) {
+                    for ( var k = 0; k < this.normal_restDays.length; k++ ) {
+                        if ( week_day === this.normal_restDays[k] ) {
                             td.style.backgroundColor = t.colors.bg_restDay;
                             bg_color = t.colors.bg_restDay;
+                        } else {
+                            td.style.backgroundColor = bg_color;
                         }
-                    }
+                    } 
 
                     td.innerHTML = calendar_date;
-                    td.onmouseover = function () {
+                    var mouseoverFn = function () {
                         this.style.backgroundColor = t.colors.bg_over;
-                    } 
-                    td.onmouseout = (function (color) {
+                    }
+
+                    var mouseoutFn = function () {
+                        this.style.backgroundColor = arguments[0];
+                    }
+                    SUBPUB.listen((function (td, fn){
                         return function () {
-                            this.style.backgroundColor = color;
+                            if ( arguments[0] === td ) {
+                                td.removeEventListener("mouseover", fn);
+                            }
                         }
-                    })(bg_color);
+                    })(td, mouseoverFn));
+                    SUBPUB.listen((function (td, fn) {
+                        return function () {
+                            if ( arguments[0] === td ) {
+                                td.removeEventListener("onmouseout", fn);
+                            }
+                        }
+                    })(td, mouseoutFn));
+                    td.addEventListener("mouseover", mouseoverFn);
+                    td.onmouseout = (function (color, td) {
+                        return mouseoutFn.bind(td, color);
+                    })(bg_color, td);
                     
                 } else {
+                    td.style.backgroundColor = t.colors.bg_out;
+                    SUBPUB.trigger(td);
                     document.getElementById('calendar_'+ (i + 1) +'_'+ j +'').innerHTML = "&nbsp";
                 }
             }
         }
+        isFirst = false;
     };
 
     //将阿拉伯数字转化为中文描述(0-99的转化)
@@ -324,7 +381,6 @@ app.controller('myCtrl', ['$scope', '$compile', function ($scope, $compile) {
                 return ch_Num[Math.floor(num/10)] + ch_Num[10] + ch_Num[num%10];
             }
         }
-            
     }
 
     var calendar = new Calendar();
